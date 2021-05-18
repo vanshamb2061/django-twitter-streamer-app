@@ -5,7 +5,7 @@ import twitter_credentials
 
 
 def user_tweets():
-    auth = OAuthHandler(, 'Consumer Secret')
+    auth = OAuthHandler(twitter_credentials.CONSUMER_KEY,twitter_credentials)
     auth.set_access_token('OAuth Access Token', 'OAuth Access Token Secret')
     api = tweepy.API(auth)
     user_tweets = api.user_timeline(count=50)
