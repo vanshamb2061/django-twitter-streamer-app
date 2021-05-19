@@ -4,27 +4,29 @@ from .models import Tweet
 import twitter_credentials
 from tweepy.streaming import StreamListener
 import re
+import preprocessor as p
+
 
 # Twitter Client
 class TwitterClient():
     def __init__(self, twitter_user=None):
         self.auth = TwitterAuthenticator().authenticate_twitter_app()
         self.twitter_client = API(self.auth)
-
         self.twitter_user = twitter_user
     
     def clean_tweet(self,tweet):
-        #removing special characters, links from tweet i.e. cleaning
-        return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", tweet).split())
+        tweet.text = p.clean(tweet.text)
+        return tweet
+
 
     def get_twitter_client_api(self):
         return self.twitter_client    
     
     def get_user_timeline_tweets(self,num_tweets):
         tweets = []
-        for tweet in Cursor(self.twitter_client.user_timeline,id=self.twitter_user).items(num_tweets):
-            cleaned_tweet=self.clean_tweet(tweet)
-            tweets.append(cleaned_tweet)
+        for tweet in Cursor(self.twitter_client.user_timeline,id=self.twitter_user,tweet_mode='extended').items(num_tweets):
+            # tweet = self.clean_tweet(tweet)
+            tweets.append(tweet)
         return tweets
 
     def get_friend_list(self,num_friends):
@@ -96,10 +98,9 @@ class TwitterListener(StreamListener):
     
 
 def fetch_user_timeline():
-    twitter_client = TwitterClient()
-    api = twitter_client.get_twitter_client_api()
-    
-    tweets = api.user_timeline(screen_name="markets",count=10)
+    twitter_client = TwitterClient("@BloombergLive")
+    # api = twitter_client.get_twitter_client_api()
+    tweets = twitter_client.get_user_timeline_tweets(10)
     return tweets
 
 def save_to_db():
@@ -107,5 +108,15 @@ def save_to_db():
     for original_tweet in original_tweets:
         if not original_tweet.retweeted:
             if not Tweet.objects.filter(tweet_id=original_tweet.id):
-                new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.text, published_date = original_tweet.created_at, is_active = True,tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count)
+                # hashtags = tweet.full_text.apply(lambda x: re.findall(r'')(r”#(\w+)”, x))
+                hashtags_list = hashtags(original_tweet.full_text)
+                new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.full_text, tweet_cleaned_text = p.clean(original_tweet.full_text), published_date = original_tweet.created_at, is_active = True, tweet_hashtags=hashtags_list,tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count)
                 new_tweet.save()  
+        elif original_tweet.retweeted:
+            if not Tweet.objects.filter(tweet_id=original_tweet.id):
+                new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.retweeted_status.full_text, tweet_cleaned_text = p.clean(original_tweet.retweeted_status.full_text), published_date = original_tweet.created_at, is_active = True,tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count)
+                new_tweet.save()  
+
+def hashtags(text):
+    hashtags_list = re.findall(r"#(\w+)", text)
+    return hashtags_list
