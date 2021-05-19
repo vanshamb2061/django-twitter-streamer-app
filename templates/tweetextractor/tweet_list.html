@@ -12,34 +12,43 @@
     </head>
     <style>
         .tweetbox{
-            border: solid black 2px;
-            padding: 20px;
-            margin:50px;
+            border: solid #1DA1F2 2px;
+            background-color: #d9ebf5;
+        }
+        .hashtag{
+            color: blue;
         }
 
     </style>
     <body>
         <a class="btn btn-primary" href="{% url 'tweet_fetch'%}">Fetch More</a>
-        <form>
+        <!-- <form>
             <input type="text" placeholder="Enter the required username">
-        </form>
+        </form> -->
         <div class="container my-3 py-5 text-center">
             <div class="row mb-5">
                 {% for tweet in tweets %}
                     <div class='col lg-2 col-md-4 col-sm-12 col-xs-12 mb-5 d-flex'>
-                        <div class="card" style="width: 18rem;">
+                        <div class="card tweetbox" style="width: 18rem;">
                             <div class="card-body col-sm">
-                            <h5 class="card-title">Tweet ID: {{tweet.tweet_id}}</h5>
-                            <p class="card-text"><b>{{tweet.tweet_text}}</b></p>
-                            <p class="card-text"><b>Cleaned Text</b>: {{tweet.tweet_cleaned_text}}</p>
-                            <h6>Published Date: {{tweet.published_date}}</h6>
-                            <h6>No. of likes: {{tweet.tweet_likes}}</h6>
-                            <h6>No. of retweets: {{tweet.tweet_retweets}}</h6>
-                            <h6>Hashtags: {{tweet.tweet_hashtags}}</h6>
+                                <h5 class="card-title">Tweet ID: {{tweet.tweet_id}}</h5>
+                                <p class="card-text"><b>{{tweet.tweet_text}}</b></p>
+                                <hr>
+                                <p class="card-text"><b>Cleaned Text</b>: {{tweet.tweet_cleaned_text}}</p>
+                                <hr>
+                                <h6>Published Date: {{tweet.published_date}}</h6>
+                                <hr>
+                                <h6>No. of likes: {{tweet.tweet_likes}}</h6>
+                                <h6>No. of retweets: {{tweet.tweet_retweets}}</h6>
+                                <hr>
+                                <h6><b>Hashtags</b></h6>
+                                {%for hashtag in tweet.tweet_hashtags.all%}
+                                    <h6 class='hashtag'>{{hashtag}}</h6>
+                                {%endfor%}
                             </div>
                         </div>
                     </div>
-                {% endfor %}
+                {% endfor %}    
             </div>
         </div>
     </body>

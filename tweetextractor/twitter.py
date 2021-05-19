@@ -108,15 +108,26 @@ def save_to_db():
     for original_tweet in original_tweets:
         if not original_tweet.retweeted:
             if not Tweet.objects.filter(tweet_id=original_tweet.id):
-                # hashtags = tweet.full_text.apply(lambda x: re.findall(r'')(r”#(\w+)”, x))
-                hashtags_list = hashtags(original_tweet.full_text)
-                new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.full_text, tweet_cleaned_text = p.clean(original_tweet.full_text), published_date = original_tweet.created_at, is_active = True, tweet_hashtags=hashtags_list,tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count)
-                new_tweet.save()  
+                hashtags_list = re.findall(r"#(\w+)", original_tweet.full_text)
+                new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.full_text, tweet_cleaned_text = p.clean(original_tweet.full_text), published_date = original_tweet.created_at, is_active = True, tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count)
+
+                # for tag in hashtags_list:
+                #     new_tweet.tags.add(tag)
+                
+                new_tweet.save()
+                for tag in hashtags_list:
+                    new_tweet.tags.add(tag)
+
         elif original_tweet.retweeted:
             if not Tweet.objects.filter(tweet_id=original_tweet.id):
-                new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.retweeted_status.full_text, tweet_cleaned_text = p.clean(original_tweet.retweeted_status.full_text), published_date = original_tweet.created_at, is_active = True,tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count)
-                new_tweet.save()  
+                hashtags_list = re.findall(r"#(\w+)", original_tweet.retweeted_status.full_text)
+                new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.retweeted_status.full_text, tweet_cleaned_text = p.clean(original_tweet.retweeted_status.full_text), published_date = original_tweet.created_at, is_active = True, tweet_hashtags=hashtags_list,tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count)
+                new_tweet.save()
 
 def hashtags(text):
     hashtags_list = re.findall(r"#(\w+)", text)
     return hashtags_list
+
+def user_mentions(text):
+    user_mentions_list = re.findall(r'@(\w+)',text)
+    return user_mentions_list
