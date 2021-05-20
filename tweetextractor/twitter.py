@@ -116,7 +116,7 @@ def save_to_db():
                 
                 new_tweet.save()
                 for tag in hashtags_list:
-                    new_tweet.tags.add(tag)
+                    new_tweet.tweet_hashtags.add(tag)
 
         elif original_tweet.retweeted:
             if not Tweet.objects.filter(tweet_id=original_tweet.id):
