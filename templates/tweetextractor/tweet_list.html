@@ -21,7 +21,7 @@
 
     </style>
     <body>
-        <a class="btn btn-primary" href="{% url 'tweet_fetch'%}">Fetch More</a>
+        <a class="btn btn-primary" href="{% url 'tweetextractor:fetch_tweets'%}">Fetch More</a>
         <!-- <form>
             <input type="text" placeholder="Enter the required username">
         </form> -->
@@ -40,6 +40,8 @@
                                 <hr>
                                 <h6>No. of likes: {{tweet.tweet_likes}}</h6>
                                 <h6>No. of retweets: {{tweet.tweet_retweets}}</h6>
+                                <hr>
+                                <h6>Author Screen Name: {{tweet.tweet_author}}</h6>
                                 <hr>
                                 <h6><b>Hashtags</b></h6>
                                 {%for hashtag in tweet.tweet_hashtags.all%}

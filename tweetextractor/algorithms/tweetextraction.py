@@ -1,6 +1,6 @@
 import tweepy
 from tweepy import OAuthHandler, Stream, API, Cursor
-from .models import Tweet
+from ..models import Tweet,TwitterAccounts
 import twitter_credentials
 from tweepy.streaming import StreamListener
 import re
@@ -97,37 +97,43 @@ class TwitterListener(StreamListener):
     
     
 
-def fetch_user_timeline():
-    twitter_client = TwitterClient("@BloombergLive")
+def fetch_user_timeline(account):
+    twitter_client = TwitterClient(account.twitter_screen_name)
     # api = twitter_client.get_twitter_client_api()
     tweets = twitter_client.get_user_timeline_tweets(10)
     return tweets
 
 def save_to_db():
-    original_tweets = fetch_user_timeline()
-    for original_tweet in original_tweets:
-        if not original_tweet.retweeted:
-            if not Tweet.objects.filter(tweet_id=original_tweet.id):
-                hashtags_list = re.findall(r"#(\w+)", original_tweet.full_text)
-                new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.full_text, tweet_cleaned_text = p.clean(original_tweet.full_text), published_date = original_tweet.created_at, is_active = True, tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count)
-
-                # for tag in hashtags_list:
-                #     new_tweet.tags.add(tag)
-                
-                new_tweet.save()
-                for tag in hashtags_list:
+    # original_tweets = fetch_user_timeline()
+    # for original_tweet in original_tweets:
+    #     if not original_tweet.retweeted:
+    #         if not Tweet.objects.filter(tweet_id=original_tweet.id):
+    #             hashtags_list = re.findall(r"#(\w+)", original_tweet.full_text)
+    #             author = TwitterAccounts(twitter_user_id=original_tweet.author.id, twitter_name=original_tweet.author.name, twitter_screen_name=original_tweet.author.screen_name, twitter_location=original_tweet.author.location)
+    #             author.save()
+    #             new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.full_text, tweet_cleaned_text = p.clean(original_tweet.full_text), published_date = original_tweet.created_at, is_active = True, tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count, is_retweeted=original_tweet.retweeted, tweet_author=author)
+    #             new_tweet.save()
+    #             for tag in hashtags_list:
+    #                 new_tweet.tweet_hashtags.add(tag)
+    accounts = TwitterAccounts.objects.all()
+    for account in accounts:
+        tweets = fetch_user_timeline(account)
+        for original_tweet in tweets:
+            hashtags_list = re.findall(r"#(\w+)", original_tweet.full_text)
+            new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.full_text, tweet_cleaned_text = p.clean(original_tweet.full_text), published_date = original_tweet.created_at, is_active = True, tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count, is_retweeted=original_tweet.retweeted, tweet_author=account)
+            new_tweet.save()
+            for tag in hashtags_list:
                     new_tweet.tweet_hashtags.add(tag)
 
-        elif original_tweet.retweeted:
-            if not Tweet.objects.filter(tweet_id=original_tweet.id):
-                hashtags_list = re.findall(r"#(\w+)", original_tweet.retweeted_status.full_text)
-                new_tweet = Tweet(tweet_id = original_tweet.id, tweet_text = original_tweet.retweeted_status.full_text, tweet_cleaned_text = p.clean(original_tweet.retweeted_status.full_text), published_date = original_tweet.created_at, is_active = True, tweet_hashtags=hashtags_list,tweet_likes=original_tweet.favorite_count,tweet_retweets=original_tweet.retweet_count)
-                new_tweet.save()
 
 def hashtags(text):
     hashtags_list = re.findall(r"#(\w+)", text)
     return hashtags_list
 
-def user_mentions(text):
-    user_mentions_list = re.findall(r'@(\w+)',text)
-    return user_mentions_list
+# def user_mentions(text):
+#     user_mentions_list = re.findall(r'@(\w+)',text)
+#     return user_mentions_list
+
+# def fetch_account(account):
+#     twitter_client = TwitterClient()
+    

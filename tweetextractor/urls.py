@@ -16,9 +16,10 @@ Including another URLconf
 from django.urls import path
 from . import views
 
-
+app_name = 'tweetextractor'
 
 urlpatterns = [
     path('new',views.tweet_list,name='tweet_list'),
-    path('fetch',views.tweet_fetch,name='tweet_fetch')
+    path('fetch',views.fetch_tweets,name='fetch_tweets'),
+    path('addaccount',views.addaccount,name='addaccount')
 ]
